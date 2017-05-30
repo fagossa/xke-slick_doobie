@@ -2,7 +2,7 @@ package com.xebia.doobie
 
 import com.xebia.doobie.common.PgConnection
 
-object HelloDoobie extends App {
+object HelloDoobie {
 
   import doobie.imports._
   import scalaz._, Scalaz._
@@ -12,7 +12,7 @@ object HelloDoobie extends App {
 
   val program = sql"select 42".query[Int].unique
 
-  private val result = program.transact(xa).run
+  val result = program.transact(xa).run
 
   println(s"The result is <$result>")
 }
