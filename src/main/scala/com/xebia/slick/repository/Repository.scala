@@ -20,15 +20,19 @@ object Repository {
 			but drop action doesn't include "IF EXISTS" option, so we need some boiler plate to safely re-create the schema
 		 */
 		implicit val ec = scala.concurrent.ExecutionContext.global
+		val triedSession = Try(db.createSession())
 		val dropResults = (Try(Seq[String]()) /: schema.dropStatements.map { statement =>
-			val session = db.createSession()
-			Try(session.prepareInsertStatement(statement).executeUpdate()).map(res => s"$statement").recoverWith {
+
+			val triedMesg = triedSession.flatMap(session => Try(session.prepareInsertStatement(statement).executeUpdate())).map(res => s"$statement").recoverWith {
 				case err if err.getMessage.contains("does not exist") => Success[String](s"Drop ignored: $err")
 				case err => Failure[String](err)
 			}
+
+			triedMesg
 		}.toSeq) { (trySeqStr, tryStr ) =>
 			trySeqStr flatMap (seqStr => tryStr map (str => seqStr :+ str))
 		}
+		triedSession.flatMap(session => Try(session.close()))
 
 		dropResults match {
 			case Failure(err) =>
