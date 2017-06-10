@@ -3,7 +3,7 @@ package com.xebia.doobie.query
 import com.xebia.doobie.HelloDoobie
 import org.scalatest._
 
-class ExamplesSpec extends FunSpec with ShouldMatchers {
+class DoobieSpec extends FunSpec with ShouldMatchers {
 
   describe("Doobie") {
 
