@@ -8,13 +8,14 @@ import scalaz.Scalaz
 
 class DoobieSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
 
+  import com.xebia.doobie.common.PgConnection
+  implicit val xa = PgConnection.connection
+
   override protected def beforeAll(configMap: ConfigMap): Unit = {
     info("Creating tables")
-    import com.xebia.doobie.common.PgConnection
     import doobie.imports._
     import Scalaz._
 
-    val xa = PgConnection.connection
     val drop = sql"DROP TABLE IF EXISTS person".update
     val create =
       sql"""
@@ -52,8 +53,16 @@ class DoobieSpec extends FunSpec with ShouldMatchers with BeforeAndAfterAll {
       }
 
       it("should insert data into DB") {
-        InsertDataExample.persistSomeData should be(3)
-        InsertDataExample.count should be(3)
+        InsertDataExample.persistThreeRecords should be(3)
+        InsertDataExample.countAll should be(3)
+      }
+
+      it("should fetch data from DB") {
+        InsertDataExample.deleteAll
+        InsertDataExample.countAll should be(0)
+        InsertDataExample.persistThreeRecords should be(3)
+        InsertDataExample.findAllPerson
+          .map(_.name) should be(List("Alice", "Bob", "John"))
       }
 
     }

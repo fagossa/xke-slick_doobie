@@ -1,17 +1,15 @@
 package com.xebia.doobie.update
 
-import com.xebia.doobie.common.PgConnection
-import com.xebia.doobie.update.InsertDataExample.xa
 import doobie.imports._
+import doobie.util.transactor
 
-import scalaz._
-import Scalaz._
+import scalaz.concurrent.Task
+
+case class Person(id: String, name: String, age: Option[Int])
 
 object InsertDataExample extends PersonRepository {
 
-  val xa = PgConnection.connection
-
-  def persistSomeData(): Int = {
+  def persistThreeRecords(implicit xa: transactor.Transactor[Task]): Int = {
     val rows = for {
       row1 <- persist("Alice", Option(12)).run
       row2 <- persist("Bob", None).run
@@ -22,16 +20,32 @@ object InsertDataExample extends PersonRepository {
     insertedRows
   }
 
+  def findAllPerson(implicit xa: transactor.Transactor[Task]): List[Person] =
+    findAll().transact(xa).unsafePerformSync
+
+  def countAll(implicit xa: transactor.Transactor[Task]): Int =
+    count().transact(xa).unsafePerformSync
+
+  def deleteAll(implicit xa: transactor.Transactor[Task]): Int =
+    delete().run.transact(xa).unsafePerformSync
 }
 
 trait PersonRepository {
 
-  def count: Int = {
+  def findAll(): ConnectionIO[List[Person]] = {
+    sql"select id, name, age from person"
+    .query[Person]
+    .list
+  }
+
+  def count(): ConnectionIO[Int] = {
     sql"select count(name) from person"
       .query[Int]
       .unique
-      .transact(xa)
-      .run
+  }
+
+  def delete(): Update0 = {
+    sql"delete from person".update
   }
 
   def persist(name: String, age: Option[Short]): Update0 =
