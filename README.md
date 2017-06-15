@@ -1,8 +1,6 @@
 Slick vs Doobie
 ==========
-
-[license-badge]: https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square
-[license-url]: LICENSE
+[![License][license-badge]][license-url]
 
 
 ## Slick
@@ -38,4 +36,7 @@ On the contrary if you want to run the db, execute the test and stop everything 
 ```
 sbt test
 ```
+
+[license-badge]: https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square
+[license-url]: LICENSE
 
